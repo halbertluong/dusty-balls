@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)file:///Users/halbertluong/Downloads/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dusty Balls Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111;--sur:#181818;--sur2:#202020;--sur3:#282828;
+  --bdr:#2c2c2c;--bdr2:#363636;
+  --tx:#f2efe9;--tx2:#999;--tx3:#555;--tx4:#333;
+  --hard:#f43f5e;--hdim:rgba(244,63,94,0.12);--hbdr:rgba(244,63,94,0.35);
+  --str:#fb923c;--sdim:rgba(251,146,60,0.12);--sbdr:rgba(251,146,60,0.35);
+  --sft:#4ade80;--sftd:rgba(74,222,128,0.12);--sftb:rgba(74,222,128,0.35);
+  --pc:#fbbf24;--pd:#422006;
+  --cc:#a78bfa;--cd:#1e1b4b;
+  --ic:#4ade80;--id:#052e16;
+  --oc:#60a5fa;--od:#0c1a3a;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+.header{padding:1.2rem 1.2rem 0;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:0.04em;line-height:1}
+.logo span{color:var(--hard)}
+.tagline{font-size:10px;color:var(--tx3);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px}
+.save-ind{font-size:11px;color:var(--sft);background:var(--sftd);padding:3px 10px;border-radius:20px;align-self:center;opacity:0;transition:opacity 0.3s}
+.save-ind.show{opacity:1}
+.tabs{display:flex;gap:2px;padding:1rem 1.2rem 0;border-bottom:0.5px solid var(--bdr)}
+.tab{padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px 8px 0 0;color:var(--tx2);border:0.5px solid transparent;border-bottom:none;position:relative;bottom:-0.5px;background:transparent;transition:color 0.15s}
+.tab.active{background:var(--sur);color:var(--tx);border-color:var(--bdr);border-bottom-color:var(--sur)}
+.pane{display:none;padding:1.2rem;animation:fadeIn 0.2s ease}
+.pane.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.slabel{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}
+.btn{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:0.5px solid var(--bdr2);background:var(--sur2);color:var(--tx);transition:background 0.15s}
+.btn:hover{background:var(--sur3)}
+.btn-primary{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.btn-primary:hover{opacity:0.88}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* RULES */
+.rules-toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.rules-grid{display:flex;flex-direction:column;gap:5px}
+.pri-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;padding:10px 2px 4px;color:var(--tx3)}
+.rule-row{display:flex;align-items:flex-start;gap:6px;background:var(--sur);border:0.5px solid var(--bdr);border-radius:9px;padding:8px 10px;cursor:grab;transition:border-color 0.15s,opacity 0.15s}
+.rule-row:active{cursor:grabbing}
+.rule-row.dragging{opacity:0.3}
+.rule-row.drag-over{border-color:var(--tx);box-shadow:0 0 0 1px var(--tx) inset}
+.rule-row.priority-hard{border-left:3px solid var(--hard);background:var(--hdim)}
+.rule-row.priority-strong{border-left:3px solid var(--str);background:var(--sdim)}
+.rule-row.priority-soft{border-left:3px solid var(--sft);background:var(--sftd)}
+.drag-handle{color:var(--tx4);font-size:14px;cursor:grab;padding:0 2px;align-self:center;flex-shrink:0}
+.rule-icon{font-size:15px;align-self:flex-start;padding-top:1px;flex-shrink:0}
+.rule-main{flex:1;min-width:0}
+.rule-cat-tag{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--tx3);font-family:'DM Mono',monospace;margin-bottom:3px}
+.rule-text-display{font-size:13px;color:var(--tx);line-height:1.45}
+.rule-text-input{font-size:13px;color:var(--tx);background:var(--sur3);border:0.5px solid var(--bdr2);border-radius:5px;padding:4px 7px;width:100%;font-family:'DM Sans',sans-serif;resize:vertical}
+.rule-text-input:focus{outline:none;border-color:var(--tx3)}
+.rule-controls{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.priority-select{font-size:10px;font-weight:600;font-family:'DM Mono',monospace;padding:3px 5px;border-radius:5px;border:0.5px solid;cursor:pointer;background:transparent}
+.priority-select.hard{color:var(--hard);border-color:var(--hbdr);background:var(--hdim)}
+.priority-select.strong{color:var(--str);border-color:var(--sbdr);background:var(--sdim)}
+.priority-select.soft{color:var(--sft);border-color:var(--sftb);background:var(--sftd)}
+.edit-btn{font-size:11px;color:var(--tx3);background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:4px}
+.edit-btn:hover{color:var(--tx);background:var(--sur3)}
+.del-btn{font-size:11px;color:var(--hard);background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:4px;opacity:0.5}
+.del-btn:hover{opacity:1}
+.add-rule-form{background:var(--sur);border:0.5px dashed var(--bdr2);border-radius:9px;padding:12px;margin-top:8px;display:none;flex-direction:column;gap:8px}
+.add-rule-form.open{display:flex}
+.form-row{display:flex;gap:8px;flex-wrap:wrap}
+.form-input{flex:1;min-width:120px;font-size:13px;background:var(--sur2);border:0.5px solid var(--bdr2);border-radius:6px;padding:7px 10px;color:var(--tx);font-family:'DM Sans',sans-serif}
+.form-input:focus{outline:none;border-color:var(--tx3)}
+select.form-input{cursor:pointer}
+
+/* LINEUP SETUP */
+.lineup-setup{background:var(--sur);border:0.5px solid var(--bdr);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.avail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:5px;margin-bottom:1rem}
+.player-toggle{padding:5px 8px;border-radius:7px;font-size:12px;cursor:pointer;border:0.5px solid var(--bdr2);background:var(--sur2);color:var(--tx2);display:flex;align-items:center;gap:5px;transition:all 0.15s;user-select:none}
+.player-toggle.on{background:var(--sftd);border-color:var(--sftb);color:var(--tx)}
+.player-toggle .g{font-size:10px;opacity:0.6}
+.setup-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.setup-label{font-size:12px;color:var(--tx2);flex-shrink:0}
+.pitcher-checks{display:flex;gap:8px;flex-wrap:wrap}
+.pitcher-cb{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--tx2);cursor:pointer}
+.pitcher-cb input{cursor:pointer;accent-color:var(--hard)}
+
+/* INNING TABS */
+.inn-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.inn-tab{padding:4px 12px;border:0.5px solid var(--bdr2);border-radius:20px;font-size:12px;cursor:pointer;background:var(--sur);color:var(--tx2)}
+.inn-tab.active{border-color:var(--tx);color:var(--tx);font-weight:600}
+
+/* FIELD SLOTS — drag/drop */
+.field-diamond{display:flex;flex-direction:column;gap:5px}
+.field-row-grid{display:grid;gap:5px;margin-bottom:0}
+
+.fslot{
+  border-radius:8px;padding:8px 6px;text-align:center;border:0.5px solid var(--bdr);
+  background:var(--sur2);position:relative;min-height:52px;
+  transition:border-color 0.15s,background 0.15s,opacity 0.15s;
+}
+.fslot.draggable-slot{cursor:grab}
+.fslot.draggable-slot:active{cursor:grabbing}
+.fslot.is-drag-src{opacity:0.35}
+.fslot.drop-target{border-color:var(--tx)!important;background:var(--sur3)!important;border-width:2px!important}
+.fslot-pos{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--tx3);margin-bottom:2px}
+.fslot-name{font-size:13px;font-weight:600;color:var(--tx)}
+.fslot.fm{border-color:#1d4ed8;background:rgba(30,64,175,0.15)}.fslot.fm .fslot-name{color:#93c5fd}
+.fslot.ff{border-color:#be185d;background:rgba(190,24,93,0.15)}.fslot.ff .fslot-name{color:#f9a8d4}
+.fslot.fcatch{border-color:#059669;background:rgba(5,150,105,0.15)}.fslot.fcatch .fslot-name{color:#6ee7b7}
+.fslot.freq{border-color:#be185d;background:rgba(190,24,93,0.15);border-width:2px}.fslot.freq .fslot-pos{color:#f9a8d4}
+
+/* SITTING ROW */
+.sit-section{margin-top:6px}
+.sit-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--tx3);margin-bottom:5px}
+.sit-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:32px;padding:5px 8px;background:var(--sur);border:0.5px solid var(--bdr2);border-radius:8px}
+.sit-chips.drop-target{border-color:var(--tx);background:var(--sur3)}
+.sit-chip{
+  background:var(--sur2);border:0.5px solid var(--bdr2);border-radius:5px;
+  padding:3px 10px;font-size:12px;color:var(--tx2);cursor:grab;user-select:none;
+  transition:border-color 0.15s,opacity 0.15s;
+}
+.sit-chip:active{cursor:grabbing}
+.sit-chip.is-drag-src{opacity:0.35}
+.sit-chip.sit-m{border-color:#1d4ed8;color:#93c5fd;background:rgba(30,64,175,0.1)}
+.sit-chip.sit-f{border-color:#be185d;color:#f9a8d4;background:rgba(190,24,93,0.1)}
+.sit-empty{font-size:11px;color:var(--tx4);align-self:center;padding:2px 0}
+
+/* FULL SHEET */
+.sheet-wrap{overflow-x:auto;margin-top:1rem}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:5px 8px;font-size:10px;font-weight:600;color:var(--tx3);border-bottom:0.5px solid var(--bdr);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;font-family:'DM Mono',monospace}
+th.inn-hdr{text-align:center}
+.copy-inn-btn{font-size:9px;background:var(--sur2);border:0.5px solid var(--bdr2);border-radius:4px;color:var(--tx3);cursor:pointer;padding:1px 5px;margin-left:4px;font-family:'DM Mono',monospace}
+.copy-inn-btn:hover{color:var(--tx);border-color:var(--tx3)}
+td{padding:5px 8px;border-bottom:0.5px solid var(--bdr);white-space:nowrap;color:var(--tx)}
+tr.row-m td{background:rgba(30,64,175,0.08)}
+tr.row-f td{background:rgba(190,24,93,0.08)}
+tr.row-m td.ncell{border-left:3px solid #1d4ed8;font-weight:600}
+tr.row-f td.ncell{border-left:3px solid #be185d;font-weight:600}
+tr.row-total td{background:var(--sur2);color:var(--tx3);font-family:'DM Mono',monospace;font-size:11px}
+tr:last-child td{border-bottom:none}
+.ipos{font-size:11px;padding:2px 7px;border-radius:5px;font-weight:600;display:inline-block;font-family:'DM Mono',monospace}
+.ip{background:var(--pd);color:var(--pc)}
+.ic{background:var(--cd);color:var(--cc)}
+.iif{background:var(--id);color:var(--ic)}
+.iof{background:var(--od);color:var(--oc)}
+.isit{color:var(--tx4);font-size:11px}
+.legend-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.leg{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;font-family:'DM Mono',monospace}
+.bat-list{display:flex;flex-direction:column;gap:3px;margin-bottom:1rem}
+.bat-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;background:var(--sur);border:0.5px solid var(--bdr)}
+.bat-item.bf{border-color:var(--hbdr)}
+.bat-num{font-size:11px;color:var(--tx3);width:18px;text-align:right;font-family:'DM Mono',monospace}
+.bat-name{font-size:13px;font-weight:500;flex:1}
+.bat-badge{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:600}
+.bbm{background:rgba(30,64,175,0.2);color:#93c5fd}.bbf{background:rgba(190,24,93,0.2);color:#f9a8d4}
+.val-ok{font-size:12px;color:var(--sft);background:var(--sftd);padding:6px 10px;border-radius:7px;margin-top:8px}
+.val-warn{font-size:12px;color:var(--hard);background:var(--hdim);padding:8px 10px;border-radius:7px;margin-top:6px;line-height:1.8}
+.copy-row{display:flex;gap:8px;margin-top:1rem;flex-wrap:wrap}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--sur);border:0.5px solid var(--bdr2);border-radius:12px;padding:1.5rem;width:300px;max-width:90vw}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:12px}
+.modal-btns{display:flex;flex-wrap:wrap;gap:6px;margin:1rem 0}
+.modal-inn-btn{padding:6px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:0.5px solid var(--bdr2);background:var(--sur2);color:var(--tx2)}
+.modal-inn-btn:hover{background:var(--sur3);color:var(--tx)}
+.modal-inn-btn.same{opacity:0.3;cursor:not-allowed}
+.modal-cancel{background:none;border:0.5px solid var(--bdr2);color:var(--tx2);padding:6px 14px;border-radius:7px;cursor:pointer;font-size:13px}
+
+/* LINEUP LIBRARY */
+.lu-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;margin-bottom:1rem;padding-bottom:1rem;border-bottom:0.5px solid var(--bdr)}
+.lu-scroll{display:flex;gap:4px;overflow-x:auto;flex:1;padding-bottom:2px;scrollbar-width:none}
+.lu-scroll::-webkit-scrollbar{display:none}
+.lu-tab{display:flex;align-items:center;gap:5px;padding:5px 10px 5px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--bdr2);background:var(--sur2);color:var(--tx2);white-space:nowrap;flex-shrink:0;transition:all 0.15s;max-width:180px}
+.lu-tab.active{background:var(--sftd);border-color:var(--sftb);color:var(--tx)}
+.lu-tab.unsaved{border-left:2px solid var(--str)}
+.lu-tab-name{overflow:hidden;text-overflow:ellipsis;flex:1}
+.lu-tab-x{font-size:10px;opacity:0.4;cursor:pointer;padding:1px 3px;border-radius:3px;flex-shrink:0}
+.lu-tab-x:hover{opacity:1;background:var(--sur3)}
+.lu-action-bar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.lu-name-input{font-size:12px;background:var(--sur2);border:0.5px solid var(--bdr2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'DM Sans',sans-serif;width:160px}
+.lu-name-input:focus{outline:none;border-color:var(--tx3)}
+.lu-empty-state{font-size:13px;color:var(--tx3);padding:2rem;text-align:center;background:var(--sur);border:0.5px dashed var(--bdr2);border-radius:10px}
+.import-hint{font-size:11px;color:var(--tx3);margin-bottom:8px;line-height:1.5}
+.import-textarea{width:100%;font-size:11px;background:var(--sur2);border:0.5px solid var(--bdr2);border-radius:6px;padding:8px;color:var(--tx);font-family:'DM Mono',monospace;resize:vertical}
+.import-textarea:focus{outline:none;border-color:var(--tx3)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">Dusty <span>Balls</span></div>
+    <div class="tagline">Lineup Manager · Spring 26</div>
+  </div>
+  <div class="save-ind" id="save-ind">✓ Saved</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(&#39;rules&#39;,this)">⚙️ Rules</div>
+  <div class="tab" onclick="switchTab(&#39;lineup&#39;,this)">🥎 Lineup Generator</div>
+</div>
+
+<div id="pane-rules" class="pane active">
+  <div class="rules-toolbar">
+    <button class="btn btn-primary" onclick="openAddForm()">+ Add rule</button>
+    <button class="btn" onclick="exportRules()">📋 Export rules</button>
+    <button class="btn btn-sm" onclick="resetRules()" style="color:var(--hard);border-color:var(--hbdr)">Reset to defaults</button>
+    <span style="font-size:11px;color:var(--tx3)">Drag to reorder · click priority to change · ✏️ to edit</span>
+  </div>
+  <div class="rules-grid" id="rules-grid"><div class="pri-header">🔴 Hard Rules — always enforce</div><div class="rule-row priority-hard" id="rrow-r1" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🏏</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Batting</div>
+      <div class="rule-text-display" id="rtxt-r1">No more than 2 men batting in a row</div>
+      <textarea class="rule-text-input" id="rinp-r1" style="display:none" rows="2">No more than 2 men batting in a row</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select hard" onchange="setPri(&#39;r1&#39;,this.value,this)">
+        <option value="hard" selected="">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r1" onclick="toggleEdit(&#39;r1&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r1&#39;)">✕</button>
+    </div></div><div class="rule-row priority-hard" id="rrow-r2" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">👩</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Gender</div>
+      <div class="rule-text-display" id="rtxt-r2">Exactly 1 female in the outfield per inning (not 0, not 2+)</div>
+      <textarea class="rule-text-input" id="rinp-r2" style="display:none" rows="2">Exactly 1 female in the outfield per inning (not 0, not 2+)</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select hard" onchange="setPri(&#39;r2&#39;,this.value,this)">
+        <option value="hard" selected="">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r2" onclick="toggleEdit(&#39;r2&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r2&#39;)">✕</button>
+    </div></div><div class="rule-row priority-hard" id="rrow-r3" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">👩</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Gender</div>
+      <div class="rule-text-display" id="rtxt-r3">1B always female</div>
+      <textarea class="rule-text-input" id="rinp-r3" style="display:none" rows="2">1B always female</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select hard" onchange="setPri(&#39;r3&#39;,this.value,this)">
+        <option value="hard" selected="">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r3" onclick="toggleEdit(&#39;r3&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r3&#39;)">✕</button>
+    </div></div><div class="rule-row priority-hard" id="rrow-r4" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">👩</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Gender</div>
+      <div class="rule-text-display" id="rtxt-r4">2B always female</div>
+      <textarea class="rule-text-input" id="rinp-r4" style="display:none" rows="2">2B always female</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select hard" onchange="setPri(&#39;r4&#39;,this.value,this)">
+        <option value="hard" selected="">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r4" onclick="toggleEdit(&#39;r4&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r4&#39;)">✕</button>
+    </div></div><div class="rule-row priority-hard" id="rrow-r5" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">⚖️</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding</div>
+      <div class="rule-text-display" id="rtxt-r5">Even distribution of innings. Every player plays the same number of innings +/- 1 inning.</div>
+      <textarea class="rule-text-input" id="rinp-r5" style="display:none" rows="2">Even distribution of innings. Every player plays the same number of innings +/- 1 inning.</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select hard" onchange="setPri(&#39;r5&#39;,this.value,this)">
+        <option value="hard" selected="">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r5" onclick="toggleEdit(&#39;r5&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r5&#39;)">✕</button>
+    </div></div><div class="pri-header">🟠 Strong Preferences</div><div class="rule-row priority-strong" id="rrow-r6" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">⚾</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Restrictions</div>
+      <div class="rule-text-display" id="rtxt-r6">Hal, Jay, Becca and Brett are the only 4 pitchers</div>
+      <textarea class="rule-text-input" id="rinp-r6" style="display:none" rows="2">Hal, Jay, Becca and Brett are the only 4 pitchers</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select strong" onchange="setPri(&#39;r6&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong" selected="">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r6" onclick="toggleEdit(&#39;r6&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r6&#39;)">✕</button>
+    </div></div><div class="rule-row priority-strong" id="rrow-r7" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🧤</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Restrictions</div>
+      <div class="rule-text-display" id="rtxt-r7">Chris P., Jay, Hal are the only ones to play catcher</div>
+      <textarea class="rule-text-input" id="rinp-r7" style="display:none" rows="2">Chris P., Jay, Hal are the only ones to play catcher</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select strong" onchange="setPri(&#39;r7&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong" selected="">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r7" onclick="toggleEdit(&#39;r7&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r7&#39;)">✕</button>
+    </div></div><div class="rule-row priority-strong" id="rrow-r8" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🚫</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Restrictions</div>
+      <div class="rule-text-display" id="rtxt-r8">Melissa V. plays 2B or RF only</div>
+      <textarea class="rule-text-input" id="rinp-r8" style="display:none" rows="2">Melissa V. plays 2B or RF only</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select strong" onchange="setPri(&#39;r8&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong" selected="">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r8" onclick="toggleEdit(&#39;r8&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r8&#39;)">✕</button>
+    </div></div><div class="rule-row priority-strong" id="rrow-r9" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">👩</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Gender</div>
+      <div class="rule-text-display" id="rtxt-r9">RF always female — Nicole plays LF instead of RF</div>
+      <textarea class="rule-text-input" id="rinp-r9" style="display:none" rows="2">RF always female — Nicole plays LF instead of RF</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select strong" onchange="setPri(&#39;r9&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong" selected="">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r9" onclick="toggleEdit(&#39;r9&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r9&#39;)">✕</button>
+    </div></div><div class="rule-row priority-strong" id="rrow-r10" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">♂️</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding</div>
+      <div class="rule-text-display" id="rtxt-r10">Always play a male at 3B and LCF, RCF, LF (unless it's Nicole in LF)</div>
+      <textarea class="rule-text-input" id="rinp-r10" style="display:none" rows="2">Always play a male at 3B and LCF, RCF, LF (unless it's Nicole in LF)</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select strong" onchange="setPri(&#39;r10&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong" selected="">🟠 Strong</option>
+        <option value="soft">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r10" onclick="toggleEdit(&#39;r10&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r10&#39;)">✕</button>
+    </div></div><div class="pri-header">🟢 Soft Suggestions</div><div class="rule-row priority-soft" id="rrow-r11" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🔄</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Rotations</div>
+      <div class="rule-text-display" id="rtxt-r11">1B rotates between Kelsey, Becca, Lizzy, and Melissa T. only</div>
+      <textarea class="rule-text-input" id="rinp-r11" style="display:none" rows="2">1B rotates between Kelsey, Becca, Lizzy, and Melissa T. only</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select soft" onchange="setPri(&#39;r11&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft" selected="">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r11" onclick="toggleEdit(&#39;r11&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r11&#39;)">✕</button>
+    </div></div><div class="rule-row priority-soft" id="rrow-r12" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🔄</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Rotations</div>
+      <div class="rule-text-display" id="rtxt-r12">2B and RF rotate evenly between Kelsey, Melissa V., Helen, Lizzy, and Melissa T. (not Becca)</div>
+      <textarea class="rule-text-input" id="rinp-r12" style="display:none" rows="2">2B and RF rotate evenly between Kelsey, Melissa V., Helen, Lizzy, and Melissa T. (not Becca)</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select soft" onchange="setPri(&#39;r12&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft" selected="">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r12" onclick="toggleEdit(&#39;r12&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r12&#39;)">✕</button>
+    </div></div><div class="rule-row priority-soft" id="rrow-r13" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">📋</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Batting</div>
+      <div class="rule-text-display" id="rtxt-r13">Standard batting order: Tim, Hal, Becca, Anthony, Nicole, Jay, Lizzy, Chris P., Kelsey, Patrick, Melissa V., Chris J., Helen, Brett, Melissa T. — absent removed, subs appended</div>
+      <textarea class="rule-text-input" id="rinp-r13" style="display:none" rows="2">Standard batting order: Tim, Hal, Becca, Anthony, Nicole, Jay, Lizzy, Chris P., Kelsey, Patrick, Melissa V., Chris J., Helen, Brett, Melissa T. — absent removed, subs appended</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select soft" onchange="setPri(&#39;r13&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft" selected="">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r13" onclick="toggleEdit(&#39;r13&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r13&#39;)">✕</button>
+    </div></div><div class="rule-row priority-soft" id="rrow-r14" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🔄</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Rotations</div>
+      <div class="rule-text-display" id="rtxt-r14">Rotate Nicole between SS and LF. When she is in LF, no need for another female outfielder. Place her in LF when Jay is pitching so a female can play 1B, 2B, and SS</div>
+      <textarea class="rule-text-input" id="rinp-r14" style="display:none" rows="2">Rotate Nicole between SS and LF. When she is in LF, no need for another female outfielder. Place her in LF when Jay is pitching so a female can play 1B, 2B, and SS</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select soft" onchange="setPri(&#39;r14&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft" selected="">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r14" onclick="toggleEdit(&#39;r14&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r14&#39;)">✕</button>
+    </div></div><div class="rule-row priority-soft" id="rrow-r15" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🧤</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Preferences</div>
+      <div class="rule-text-display" id="rtxt-r15">Chris P., Hal, Jay, Anthony, Tim and Brett prefer LCF/RCF or SS/3B</div>
+      <textarea class="rule-text-input" id="rinp-r15" style="display:none" rows="2">Chris P., Hal, Jay, Anthony, Tim and Brett prefer LCF/RCF or SS/3B</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select soft" onchange="setPri(&#39;r15&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft" selected="">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r15" onclick="toggleEdit(&#39;r15&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r15&#39;)">✕</button>
+    </div></div><div class="rule-row priority-soft" id="rrow-r16" draggable="true"><div class="drag-handle">⠿</div><div class="rule-icon">🧤</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">Fielding · Preferences</div>
+      <div class="rule-text-display" id="rtxt-r16">Chris J. mostly outfield, some infield rotated in</div>
+      <textarea class="rule-text-input" id="rinp-r16" style="display:none" rows="2">Chris J. mostly outfield, some infield rotated in</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select soft" onchange="setPri(&#39;r16&#39;,this.value,this)">
+        <option value="hard">🔴 Hard</option>
+        <option value="strong">🟠 Strong</option>
+        <option value="soft" selected="">🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-r16" onclick="toggleEdit(&#39;r16&#39;)">✏️</button>
+      <button class="del-btn" onclick="deleteRule(&#39;r16&#39;)">✕</button>
+    </div></div></div>
+  <div class="add-rule-form" id="add-form">
+    <div class="slabel">New rule</div>
+    <div class="form-row">
+      <input class="form-input" id="new-icon" placeholder="Icon" style="width:70px;flex:none">
+      <input class="form-input" id="new-cat" placeholder="Category">
+    </div>
+    <textarea class="form-input" id="new-text" placeholder="Rule description..." rows="2"></textarea>
+    <div class="form-row">
+      <select class="form-input" id="new-priority" style="width:160px;flex:none">
+        <option value="hard">🔴 Hard Rule</option>
+        <option value="strong">🟠 Strong Preference</option>
+        <option value="soft">🟢 Soft Suggestion</option>
+      </select>
+      <button class="btn btn-primary" onclick="addRule()">Add</button>
+      <button class="btn" onclick="closeAddForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="pane-lineup" class="pane">
+  <div class="lineup-setup">
+    <div class="slabel" style="margin-bottom:10px">Game setup</div>
+    <div class="setup-row">
+      <span class="setup-label">Date:</span>
+      <input class="form-input" type="text" id="game-date" placeholder="e.g. 5/3" style="width:100px;flex:none">
+      <span class="setup-label">Innings:</span>
+      <input class="form-input" type="number" id="innings-count" value="7" min="5" max="9" style="width:60px;flex:none;text-align:center">
+    </div>
+    <div class="setup-row">
+      <span class="setup-label">Pitchers this week:</span>
+      <div class="pitcher-checks" id="pitcher-checks"><label class="pitcher-cb"><input type="checkbox" value="Hal Luong"> Hal</label><label class="pitcher-cb"><input type="checkbox" value="Becca Ayon" checked=""> Becca</label><label class="pitcher-cb"><input type="checkbox" value="Jay Thoresen" checked=""> Jay</label><label class="pitcher-cb"><input type="checkbox" value="Brett Wejrowski"> Brett</label></div>
+    </div>
+    <div class="slabel" style="margin-bottom:8px">Available players</div>
+    <div class="avail-grid" id="avail-grid"><div class="player-toggle on" id="avail-0"><span class="g">♂</span>Tim</div><div class="player-toggle on" id="avail-1"><span class="g">♂</span>Hal</div><div class="player-toggle on" id="avail-2"><span class="g">♀</span>Becca</div><div class="player-toggle on" id="avail-3"><span class="g">♂</span>Anthony</div><div class="player-toggle on" id="avail-4"><span class="g">♀</span>Nicole</div><div class="player-toggle on" id="avail-5"><span class="g">♂</span>Jay</div><div class="player-toggle on" id="avail-6"><span class="g">♀</span>Lizzy</div><div class="player-toggle on" id="avail-7"><span class="g">♂</span>Chris P.</div><div class="player-toggle on" id="avail-8"><span class="g">♀</span>Kelsey</div><div class="player-toggle on" id="avail-9"><span class="g">♂</span>Patrick</div><div class="player-toggle on" id="avail-10"><span class="g">♀</span>Melissa V.</div><div class="player-toggle on" id="avail-11"><span class="g">♂</span>Chris J.</div><div class="player-toggle on" id="avail-12"><span class="g">♀</span>Helen</div><div class="player-toggle on" id="avail-13"><span class="g">♂</span>Brett</div><div class="player-toggle on" id="avail-14"><span class="g">♀</span>Melissa T.</div></div>
+    <button class="btn btn-primary" onclick="generateLineupAndSave()">Generate lineup →</button>
+  </div>
+  <!-- LINEUP LIBRARY -->
+  <div style="margin-top:1.5rem">
+    <div class="slabel">Saved lineups</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="slabel" style="margin-bottom:0">Saved lineups</span>
+        <span id="cloud-status" style="font-size:11px;display:none"></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span id="sync-badge" style="font-size: 10px; color: var(--sft); background: var(--sftd); padding: 2px 8px; border-radius: 20px; display: inline;">☁ Cloud sync on</span>
+        <button class="btn btn-sm" onclick="manualCloudSync()" title="Reload from cloud">↻ Sync</button>
+      </div>
+    </div>
+    <div class="lu-bar">
+      <div class="lu-scroll" id="lu-scroll"><span style="font-size:12px;color:var(--tx4);padding:6px 4px">No saved lineups yet — generate and save one below</span></div>
+      <button class="btn btn-sm" onclick="openImportModal()" style="flex-shrink:0">⬆ Import</button>
+    </div>
+    <div id="lu-body"></div>
+  </div>
+
+  <div id="lineup-out"></div>
+</div>
+
+<!-- COPY INNING MODAL -->
+<div class="modal-overlay" id="copy-modal">
+  <div class="modal">
+    <h3>Copy Inning <span id="modal-src-lbl"></span> to...</h3>
+    <div class="modal-btns" id="modal-btns"></div>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- IMPORT LINEUP MODAL -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal" style="width:520px;max-width:95vw">
+    <h3>Import lineup</h3>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="btn btn-sm" id="imp-tab-tsv" onclick="setImportTab(&#39;tsv&#39;)" style="background:var(--tx);color:var(--bg);border-color:var(--tx)">📋 Paste from Google Sheets</button>
+      <button class="btn btn-sm" id="imp-tab-json" onclick="setImportTab(&#39;json&#39;)">{ } Import JSON</button>
+    </div>
+    <div id="imp-tsv-section">
+      <p class="import-hint">Copy the lineup from Google Sheets (select all cells including header row and player names) then paste below. Format: Player | 1 | 2 | 3 ... columns.</p>
+      <div style="margin-bottom:6px">
+        <label style="font-size:11px;color:var(--tx2)">Lineup label / date:</label>
+        <input id="imp-tsv-label" class="import-textarea" style="width:100%;height:auto;padding:5px 8px;font-size:13px;margin-top:3px" placeholder="e.g. 4/26 — Becca &amp; Jay pitching">
+      </div>
+      <textarea class="import-textarea" id="import-tsv-area" rows="10" oninput="previewTSV()" placeholder="Player	1	2	3	4	5	6	7
+Tim Goelze	LCF	RCF	..."></textarea>
+    </div>
+    <div id="imp-json-section" style="display:none">
+      <p class="import-hint">Paste a previously exported lineup JSON (from the Export JSON button).</p>
+      <textarea class="import-textarea" id="import-json-area" rows="10" placeholder="{&quot;id&quot;:&quot;...&quot;,&quot;label&quot;:&quot;...&quot;,...}"></textarea>
+    </div>
+    <div id="imp-preview" style="margin-top:8px;font-size:11px;color:var(--tx3)"></div>
+    <div class="modal-btns" style="margin-top:10px">
+      <button class="btn btn-primary" onclick="doImport()">Import lineup</button>
+      <button class="modal-cancel" onclick="closeImportModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG & CONSTANTS
+// ══════════════════════════════════════════
+const SK = 'dustyballs_v4';
+const LU_SK = 'dustyballs_lineups_v1'; // lineup library storage key
+
+// ── Supabase config ──
+const SB_URL = 'https://dyxngkonwodmbfgetkyl.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR5eG5na29ud29kbWJmZ2V0a3lsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMTM2NzAsImV4cCI6MjA4ODY4OTY3MH0.UlLkl_4fpfFKIEbbHMlS0kbizd0-cw1CsOjGpkYpbWQ';
+const SB_TABLE = 'dustyballs_lineups';
+let cloudSyncEnabled = true; // flips to false if Supabase unreachable
+
+async function sbFetch(method, path, body){
+  const res = await fetch(SB_URL + '/rest/v1/' + path, {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if(!res.ok){
+    const txt = await res.text();
+    throw new Error('Supabase ' + method + ' ' + path + ': ' + res.status + ' ' + txt);
+  }
+  const ct = res.headers.get('content-type')||'';
+  return ct.includes('json') ? res.json() : [];
+}
+
+// Convert library entry (camelCase) to DB row (snake_case)
+function entryToRow(e){
+  return {
+    id:          e.id,
+    label:       e.label,
+    saved_at:    e.savedAt || new Date().toISOString(),
+    game_date:   e.date || '',
+    innings:     e.innings,
+    avail_names: e.availNames,
+    bat_names:   e.batNames,
+    assignments: e.assignments,
+  };
+}
+
+// Convert DB row back to library entry
+function rowToEntry(r){
+  return {
+    id:          r.id,
+    label:       r.label,
+    savedAt:     r.saved_at,
+    date:        r.game_date,
+    innings:     r.innings,
+    availNames:  r.avail_names,
+    batNames:    r.bat_names,
+    assignments: r.assignments,
+  };
+}
+
+async function cloudSave(entry){
+  if(!cloudSyncEnabled) return;
+  try {
+    await sbFetch('POST', SB_TABLE, entryToRow(entry));
+  } catch(e) {
+    console.warn('Cloud save failed:', e.message);
+    showCloudStatus('⚠ Cloud save failed — saved locally only', 'warn');
+  }
+}
+
+async function cloudDelete(id){
+  if(!cloudSyncEnabled) return;
+  try {
+    await sbFetch('DELETE', SB_TABLE + '?id=eq.' + encodeURIComponent(id));
+  } catch(e) {
+    console.warn('Cloud delete failed:', e.message);
+  }
+}
+
+async function cloudLoadAll(){
+  try {
+    const rows = await sbFetch('GET', SB_TABLE + '?order=saved_at.desc&limit=50');
+    return rows.map(rowToEntry);
+  } catch(e) {
+    console.warn('Cloud load failed:', e.message);
+    cloudSyncEnabled = false;
+    showCloudStatus('⚠ Cloud unavailable — using local storage', 'warn');
+    return null;
+  }
+}
+
+function showCloudStatus(msg, type){
+  const el = document.getElementById('cloud-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = type === 'ok' ? 'var(--sft)' : type === 'warn' ? 'var(--str)' : 'var(--hard)';
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.style.display='none'; }, 4000);
+}
+
+// HARD RULES — enforced unconditionally in engine
+const FEMALE_ONLY   = ['1B','2B'];   // always female, no exceptions
+const FEMALE_PREF   = ['RF'];        // female preferred (strong, not hard in new rules)
+const MALE_PREF     = ['3B','LCF','RCF','LF']; // male preferred unless Nicole in LF
+const ALL_POS       = ['P','C','1B','2B','3B','SS','LF','LCF','RCF','RF'];
+const INFIELD       = ['P','C','1B','2B','3B','SS'];
+const OUTFIELD      = ['LF','LCF','RCF','RF'];
+const REQ_F_DISPLAY = ['1B','2B','RF']; // just for display pink border
+
+// Strong preferences (treated as near-hard but can break if needed)
+const PREF_PITCHERS = ['Hal Luong','Jay Thoresen','Becca Ayon','Brett Wejrowski'];
+const PREF_CATCHERS = ['Chris Pearcy','Jay Thoresen','Hal Luong'];
+const MV_PREF_POS   = ['2B','RF'];
+const ONEB_ROT      = ['Becca Ayon','Kelsey Cameron','Lizzy Schaad','Melissa Thoresen'];
+const TWOBRF_ROT    = ['Kelsey Cameron','Melissa Vielma','Helen Vu','Lizzy Schaad','Melissa Thoresen'];
+
+const STD_BAT = ['Tim Goelze','Hal Luong','Becca Ayon','Anthony Ayon','Nicole Wolfe',
+  'Jay Thoresen','Lizzy Schaad','Chris Pearcy','Kelsey Cameron','Patrick Sterns',
+  'Melissa Vielma','Chris Johnson','Helen Vu','Brett Wejrowski','Melissa Thoresen'];
+
+const ROSTER = [
+  {name:'Tim Goelze',       g:'M', pref:['LCF','RCF','SS','3B'],         ok:['1B','2B','LF','RF'],            avoid:[],     limit:null,        canPitch:false},
+  {name:'Hal Luong',        g:'M', pref:['3B','SS','LCF','RCF'],         ok:['C','1B','2B','LF','RF'],        avoid:[],     limit:null,        canPitch:true},
+  {name:'Becca Ayon',       g:'F', pref:['P','1B'],                      ok:['2B','LF','LCF','RCF','RF','SS'],avoid:[],     limit:null,        canPitch:true},
+  {name:'Anthony Ayon',     g:'M', pref:['SS','LCF','3B'],               ok:['2B','LF','RF','RCF'],           avoid:[],     limit:null,        canPitch:false},
+  {name:'Nicole Wolfe',     g:'F', pref:['SS','LF'],                     ok:['1B','2B','3B','LCF','RCF','RF'],avoid:[],     limit:null,        canPitch:false},
+  {name:'Jay Thoresen',     g:'M', pref:['P','C','SS','3B','RCF','LCF'], ok:['1B','2B','LF','RF'],            avoid:[],     limit:null,        canPitch:true},
+  {name:'Lizzy Schaad',     g:'F', pref:['1B','2B'],                     ok:['LF','LCF','RCF','RF','SS'],     avoid:[],     limit:null,        canPitch:false},
+  {name:'Chris Pearcy',     g:'M', pref:['C','SS','3B','RCF'],           ok:['1B','2B','LCF','LF','RF'],      avoid:[],     limit:null,        canPitch:false},
+  {name:'Kelsey Cameron',   g:'F', pref:['2B','SS','1B'],                ok:['LF','LCF','RCF','RF'],          avoid:[],     limit:null,        canPitch:false},
+  {name:'Patrick Sterns',   g:'M', pref:['RCF','LCF','RF'],              ok:['1B','2B','3B','SS','LF'],       avoid:[],     limit:null,        canPitch:false},
+  {name:'Melissa Vielma',   g:'F', pref:['2B','RF'],                     ok:[],                               avoid:[],     limit:['2B','RF'], canPitch:false},
+  {name:'Chris Johnson',    g:'M', pref:['LF','LCF','RCF'],              ok:['1B','2B','3B','SS','RF'],        avoid:['C'],  limit:null,        canPitch:false},
+  {name:'Helen Vu',         g:'F', pref:['LF','RF'],                     ok:['LCF','RCF','1B','2B','SS'],     avoid:[],     limit:null,        canPitch:false},
+  {name:'Brett Wejrowski',  g:'M', pref:['LCF','RCF','SS','3B'],         ok:['P','1B','2B','LF','RF'],        avoid:['C'],  limit:null,        canPitch:true},
+  {name:'Melissa Thoresen', g:'F', pref:['2B','SS','3B','LF','LCF'],     ok:['1B','RF','RCF'],                avoid:[],     limit:null,        canPitch:false},
+];
+
+const DEFAULT_RULES = [
+  // HARD (5 — from latest export)
+  {id:'r1', icon:'🏏',cat:'Batting',               priority:'hard',  text:'No more than 2 men batting in a row'},
+  {id:'r2', icon:'👩',cat:'Fielding · Gender',     priority:'hard',  text:'Exactly 1 female in the outfield per inning (not 0, not 2+)'},
+  {id:'r3', icon:'👩',cat:'Fielding · Gender',     priority:'hard',  text:'1B always female'},
+  {id:'r4', icon:'👩',cat:'Fielding · Gender',     priority:'hard',  text:'2B always female'},
+  {id:'r5', icon:'⚖️',cat:'Fielding',              priority:'hard',  text:'Even distribution of innings. Every player plays the same number of innings +/- 1 inning.'},
+  // STRONG (5)
+  {id:'r6', icon:'⚾',cat:'Fielding · Restrictions',priority:'strong',text:'Hal, Jay, Becca and Brett are the only 4 pitchers'},
+  {id:'r7', icon:'🧤',cat:'Fielding · Restrictions',priority:'strong',text:'Chris P., Jay, Hal are the only ones to play catcher'},
+  {id:'r8', icon:'🚫',cat:'Fielding · Restrictions',priority:'strong',text:'Melissa V. plays 2B or RF only'},
+  {id:'r9', icon:'👩',cat:'Fielding · Gender',     priority:'strong',text:'RF always female — Nicole plays LF instead of RF'},
+  {id:'r10',icon:'♂️',cat:'Fielding',              priority:'strong',text:'Always play a male at 3B and LCF, RCF, LF (unless it\'s Nicole in LF)'},
+  // SOFT (6)
+  {id:'r11',icon:'🔄',cat:'Fielding · Rotations',  priority:'soft',  text:'1B rotates between Kelsey, Becca, Lizzy, and Melissa T. only'},
+  {id:'r12',icon:'🔄',cat:'Fielding · Rotations',  priority:'soft',  text:'2B and RF rotate evenly between Kelsey, Melissa V., Helen, Lizzy, and Melissa T. (not Becca)'},
+  {id:'r13',icon:'📋',cat:'Batting',               priority:'soft',  text:'Standard batting order: Tim, Hal, Becca, Anthony, Nicole, Jay, Lizzy, Chris P., Kelsey, Patrick, Melissa V., Chris J., Helen, Brett, Melissa T. — absent removed, subs appended'},
+  {id:'r14',icon:'🔄',cat:'Fielding · Rotations',  priority:'soft',  text:'Rotate Nicole between SS and LF. When she is in LF, no need for another female outfielder. Place her in LF when Jay is pitching so a female can play 1B, 2B, and SS'},
+  {id:'r15',icon:'🧤',cat:'Fielding · Preferences',priority:'soft',  text:'Chris P., Hal, Jay, Anthony, Tim and Brett prefer LCF/RCF or SS/3B'},
+  {id:'r16',icon:'🧤',cat:'Fielding · Preferences',priority:'soft',  text:'Chris J. mostly outfield, some infield rotated in'},
+];
+
+let nextId=17, rules=[], ruleDragSrc=null;
+let G={}; // global game state
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function dn(p){
+  const pts=p.name.split(' '),first=pts[0],last=pts[pts.length-1];
+  if(first==='Melissa'||first==='Chris') return `${first} ${last[0]}.`;
+  return first;
+}
+function rp(name){return ROSTER.find(p=>p.name===name);}
+
+// ══════════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════════
+function saveRules(){
+  try{localStorage.setItem(SK,JSON.stringify({rules,nextId}));flashSaved();}catch(e){}
+}
+function flashSaved(){
+  const el=document.getElementById('save-ind');el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2000);
+}
+function loadRules(){
+  try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);if(p.rules&&p.rules.length){rules=p.rules;nextId=p.nextId||20;return true;}}}catch(e){}
+  return false;
+}
+function resetRules(){
+  if(!confirm('Reset all rules to defaults?'))return;
+  rules=DEFAULT_RULES.map(r=>({...r}));nextId=17;saveRules();renderRules();
+}
+
+// ══════════════════════════════════════════
+// RULES PANE
+// ══════════════════════════════════════════
+function renderRules(){
+  const grid=document.getElementById('rules-grid');grid.innerHTML='';
+  const g={hard:[],strong:[],soft:[]};
+  rules.forEach(r=>{if(g[r.priority])g[r.priority].push(r);});
+  const lbl={hard:'🔴 Hard Rules — always enforce',strong:'🟠 Strong Preferences',soft:'🟢 Soft Suggestions'};
+  ['hard','strong','soft'].forEach(pri=>{
+    if(!g[pri].length)return;
+    const h=document.createElement('div');h.className='pri-header';h.textContent=lbl[pri];grid.appendChild(h);
+    g[pri].forEach(r=>grid.appendChild(makeRuleRow(r)));
+  });
+}
+function makeRuleRow(r){
+  const row=document.createElement('div');
+  row.className=`rule-row priority-${r.priority}`;row.id='rrow-'+r.id;row.draggable=true;
+  row.innerHTML=`<div class="drag-handle">⠿</div><div class="rule-icon">${r.icon}</div>
+    <div class="rule-main">
+      <div class="rule-cat-tag">${r.cat}</div>
+      <div class="rule-text-display" id="rtxt-${r.id}">${r.text}</div>
+      <textarea class="rule-text-input" id="rinp-${r.id}" style="display:none" rows="2">${r.text}</textarea>
+    </div>
+    <div class="rule-controls">
+      <select class="priority-select ${r.priority}" onchange="setPri('${r.id}',this.value,this)">
+        <option value="hard" ${r.priority==='hard'?'selected':''}>🔴 Hard</option>
+        <option value="strong" ${r.priority==='strong'?'selected':''}>🟠 Strong</option>
+        <option value="soft" ${r.priority==='soft'?'selected':''}>🟢 Soft</option>
+      </select>
+      <button class="edit-btn" id="ebtn-${r.id}" onclick="toggleEdit('${r.id}')">✏️</button>
+      <button class="del-btn" onclick="deleteRule('${r.id}')">✕</button>
+    </div>`;
+  row.addEventListener('dragstart',e=>{ruleDragSrc=r.id;row.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+  row.addEventListener('dragend',()=>{row.classList.remove('dragging');document.querySelectorAll('.rule-row').forEach(x=>x.classList.remove('drag-over'));ruleDragSrc=null;});
+  row.addEventListener('dragover',e=>{e.preventDefault();document.querySelectorAll('.rule-row').forEach(x=>x.classList.remove('drag-over'));row.classList.add('drag-over');});
+  row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop',e=>{
+    e.preventDefault();row.classList.remove('drag-over');
+    if(!ruleDragSrc||ruleDragSrc===r.id)return;
+    const fi=rules.findIndex(x=>x.id===ruleDragSrc),ti=rules.findIndex(x=>x.id===r.id);
+    const[m]=rules.splice(fi,1);m.priority=r.priority;rules.splice(ti,0,m);
+    saveRules();renderRules();
+  });
+  return row;
+}
+function setPri(id,val,sel){
+  const r=rules.find(x=>x.id===id);if(r)r.priority=val;
+  sel.className=`priority-select ${val}`;
+  document.getElementById('rrow-'+id).className=`rule-row priority-${val}`;
+  saveRules();setTimeout(renderRules,400);
+}
+function toggleEdit(id){
+  const d=document.getElementById('rtxt-'+id),i=document.getElementById('rinp-'+id),b=document.getElementById('ebtn-'+id);
+  if(i.style.display!=='none'){const r=rules.find(x=>x.id===id);if(r)r.text=i.value;d.textContent=i.value;i.style.display='none';d.style.display='block';b.textContent='✏️';saveRules();}
+  else{i.style.display='block';d.style.display='none';b.textContent='✓';}
+}
+function deleteRule(id){if(!confirm('Delete?'))return;rules=rules.filter(x=>x.id!==id);saveRules();renderRules();}
+function openAddForm(){document.getElementById('add-form').classList.add('open');}
+function closeAddForm(){document.getElementById('add-form').classList.remove('open');}
+function addRule(){
+  const icon=document.getElementById('new-icon').value||'📌';
+  const cat=document.getElementById('new-cat').value||'General';
+  const text=document.getElementById('new-text').value.trim();
+  const priority=document.getElementById('new-priority').value;
+  if(!text)return;
+  rules.push({id:'r'+(nextId++),icon,cat,priority,text});
+  closeAddForm();['new-icon','new-cat','new-text'].forEach(id=>document.getElementById(id).value='');
+  saveRules();renderRules();
+}
+function exportRules(){
+  let o='DUSTY BALLS — RULE PRIORITY LIST\n'+'='.repeat(36)+'\n\n';
+  const g={hard:[],strong:[],soft:[]};rules.forEach(r=>{if(g[r.priority])g[r.priority].push(r);});
+  const l={hard:'🔴 HARD RULES (always enforce)',strong:'🟠 STRONG PREFERENCES',soft:'🟢 SOFT SUGGESTIONS'};
+  ['hard','strong','soft'].forEach(p=>{if(!g[p].length)return;o+=l[p]+'\n';g[p].forEach((r,i)=>o+=`  ${i+1}. [${r.cat}] ${r.text}\n`);o+='\n';});
+  navigator.clipboard.writeText(o).then(()=>alert('Copied!'));
+}
+
+// ══════════════════════════════════════════
+// LINEUP PANE INIT
+// ══════════════════════════════════════════
+function initLineupPane(){
+  const ag=document.getElementById('avail-grid');ag.innerHTML='';
+  ROSTER.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='player-toggle on';d.id='avail-'+i;
+    d.innerHTML=`<span class="g">${p.g==='M'?'♂':'♀'}</span>${dn(p)}`;
+    d.onclick=()=>d.classList.toggle('on');ag.appendChild(d);
+  });
+  const pc=document.getElementById('pitcher-checks');pc.innerHTML='';
+  ROSTER.filter(p=>p.canPitch).forEach(p=>{
+    const l=document.createElement('label');l.className='pitcher-cb';
+    l.innerHTML=`<input type="checkbox" value="${p.name}" ${['Becca Ayon','Jay Thoresen'].includes(p.name)?'checked':''}> ${dn(p)}`;
+    pc.appendChild(l);
+  });
+}
+function getAvail(){return ROSTER.filter((_,i)=>document.getElementById('avail-'+i)?.classList.contains('on'));}
+function getPitchers(){return[...document.querySelectorAll('#pitcher-checks input:checked')].map(x=>x.value).filter(n=>getAvail().find(p=>p.name===n));}
+
+// ══════════════════════════════════════════
+// ENGINE HELPERS — canPlay + scoring
+// ══════════════════════════════════════════
+function canPlay(p, pos){
+  // Limit overrides everything
+  if(p.limit) return p.limit.includes(pos);
+  if(pos==='P') return p.canPitch;
+  if(p.avoid.includes(pos)) return false;
+  return [...p.pref,...p.ok].includes(pos);
+}
+
+function sc(p, pos, hist){
+  if(p.limit) return p.limit.includes(pos) ? 2 : -99;
+  if(pos==='P' && !p.canPitch) return -99;
+  if(p.avoid.includes(pos)) return -99;
+  let s = p.pref.includes(pos) ? 2 : p.ok.includes(pos) ? 1 : 0;
+  if(hist.slice(-2).includes(pos)) s -= 0.5; // reduce repeat
+  return s + Math.random()*0.05;
+}
+
+// ══════════════════════════════════════════
+// SITTING SCHEDULE — strict round-robin
+// Guarantees every player gets baseI or baseI+1 innings, no more, no less.
+// ══════════════════════════════════════════
+function buildSitSchedule(avail, innings){
+  const n = avail.length;
+  const slots = innings * 10;
+  const baseI = Math.floor(slots / n);
+  const extras = slots - baseI * n;
+
+  // Assign targets: first 'extras' players (in STD_BAT order) get baseI+1, rest get baseI
+  const ordered = [...STD_BAT.filter(nm=>avail.find(p=>p.name===nm)),
+                   ...avail.filter(p=>!STD_BAT.includes(p.name)).map(p=>p.name)];
+  const target = {};
+  avail.forEach(p=>target[p.name]=baseI);
+  ordered.slice(0,extras).forEach(nm=>{if(target[nm]!==undefined)target[nm]=baseI+1;});
+
+  // Build playing lists per inning via round-robin sit rotation
+  // Each inning: players who haven't yet hit their target play (up to 10)
+  // If >10 available, rotate who sits evenly
+  const played = {};avail.forEach(p=>played[p.name]=0);
+  const playingLists = [];
+
+  for(let inn=0; inn<innings; inn++){
+    // Players still needing innings
+    const needMore = avail.filter(p=>played[p.name]<target[p.name]);
+    let playing;
+    if(needMore.length <= 10){
+      playing = needMore;
+      // If fewer than 10, pull from those who've hit target (least played first) to fill up
+      if(playing.length < 10){
+        const done = avail.filter(p=>played[p.name]>=target[p.name])
+          .sort((a,b)=>played[a.name]-played[b.name]);
+        playing = [...playing, ...done.slice(0, 10-playing.length)];
+      }
+    } else {
+      // More than 10 need innings — sort by played count (most deprived first), take 10
+      playing = [...needMore].sort((a,b)=>played[a.name]-played[b.name]).slice(0,10);
+    }
+    playingLists.push(playing.map(p=>p.name));
+    playing.forEach(p=>played[p.name]++);
+  }
+
+  return {playingLists, target};
+}
+
+// ══════════════════════════════════════════
+// ASSIGN ONE INNING
+// Hard rules enforced unconditionally:
+//   1. 1B and 2B MUST be female — males rejected at source
+//   2. Exactly 1 female in outfield
+// Strong preferences applied next.
+// ══════════════════════════════════════════
+function assignInning(playingNames, avail, pitcherName, cnt2B, cntRF, cnt1B, hist){
+  const playing = playingNames.map(nm=>avail.find(p=>p.name===nm)).filter(Boolean);
+  const inning={};
+  const pA=new Set(), posA=new Set();
+  const assign=(p,pos)=>{if(!p||pA.has(p.name)||posA.has(pos))return false;inning[p.name]=pos;pA.add(p.name);posA.add(pos);return true;};
+  const findP=nm=>playing.find(p=>p.name===nm&&!pA.has(p.name));
+
+  // ── STEP 1: Pitcher (strong pref: approved list only) ──
+  if(pitcherName){
+    const pit=findP(pitcherName);
+    if(pit) assign(pit,'P');
+  }
+  const jayP   = inning['Jay Thoresen']==='P';
+  const beccaP = inning['Becca Ayon']==='P';
+
+  // ── STEP 2: Catcher (strong pref: approved list only) ──
+  const catchOpts = PREF_CATCHERS.filter(nm=>findP(nm))
+    .sort((a,b)=>(hist[a]||[]).filter(x=>x==='C').length-(hist[b]||[]).filter(x=>x==='C').length);
+  if(catchOpts.length) assign(findP(catchOpts[0]),'C');
+
+  // ── STEP 3: Nicole placement (soft: LF when Jay pitching, else SS) ──
+  const nicole=findP('Nicole Wolfe');
+  if(nicole) assign(nicole, jayP?'LF':'SS');
+  const nicInLF = inning['Nicole Wolfe']==='LF';
+
+  // ── STEP 4: RF = female (strong pref). Skip if Nicole in LF. ──
+  if(!nicInLF && !posA.has('RF')){
+    // Only females from rotation, sorted by least used at RF
+    const rfOpts = TWOBRF_ROT
+      .filter(nm=>findP(nm))
+      .filter(nm=>{const p=avail.find(x=>x.name===nm);return p&&p.g==='F'&&canPlay(p,'RF');})
+      .sort((a,b)=>(cntRF[a]||0)-(cntRF[b]||0)+(Math.random()-0.5)*0.1);
+    if(rfOpts.length){const c=findP(rfOpts[0]);if(c&&assign(c,'RF'))cntRF[rfOpts[0]]=(cntRF[rfOpts[0]]||0)+1;}
+  }
+
+  // ── STEP 5: 2B = MUST be female (HARD RULE) ──
+  // MV first (she can only do 2B/RF); else rotation ladies
+  if(!posA.has('2B')){
+    const mv=findP('Melissa Vielma');
+    const mvAtRF = inning['Melissa Vielma']==='RF';
+    if(mv && !mvAtRF){
+      assign(mv,'2B'); cnt2B['Melissa Vielma']=(cnt2B['Melissa Vielma']||0)+1;
+    } else {
+      // Only females from TWOBRF_ROT (not MV since she's handled above or at RF)
+      const opts = TWOBRF_ROT
+        .filter(nm=>nm!=='Melissa Vielma'&&findP(nm))
+        .filter(nm=>{const p=avail.find(x=>x.name===nm);return p&&p.g==='F'&&canPlay(p,'2B');})
+        .sort((a,b)=>(cnt2B[a]||0)-(cnt2B[b]||0)+(Math.random()-0.5)*0.1);
+      if(opts.length){const c=findP(opts[0]);if(c&&assign(c,'2B'))cnt2B[opts[0]]=(cnt2B[opts[0]]||0)+1;}
+      // If rotation females exhausted or none available, use ANY available female for 2B (HARD RULE)
+      if(!posA.has('2B')){
+        const anyF = playing.filter(p=>p.g==='F'&&!pA.has(p.name)&&canPlay(p,'2B'));
+        if(anyF.length) assign(anyF.sort((a,b)=>sc(b,'2B',hist[b.name]||[])-sc(a,'2B',hist[a.name]||[]))[0],'2B');
+      }
+    }
+  }
+
+  // ── STEP 5b: MV fallback — if unassigned and RF open ──
+  const mv2=findP('Melissa Vielma');
+  if(mv2&&!posA.has('RF')) assign(mv2,'RF');
+
+  // ── STEP 6: 1B = MUST be female (HARD RULE) ──
+  // Rotation first, then any available female
+  if(!posA.has('1B')){
+    const opts = ONEB_ROT
+      .filter(nm=>findP(nm))
+      .filter(nm=>{const p=avail.find(x=>x.name===nm);return p&&p.g==='F'&&canPlay(p,'1B');})
+      .sort((a,b)=>(cnt1B[a]||0)-(cnt1B[b]||0)+(Math.random()-0.5)*0.1);
+    if(opts.length){const c=findP(opts[0]);if(c&&assign(c,'1B'))cnt1B[opts[0]]=(cnt1B[opts[0]]||0)+1;}
+    // Fallback: any female who can play 1B
+    if(!posA.has('1B')){
+      const anyF = playing.filter(p=>p.g==='F'&&!pA.has(p.name)&&canPlay(p,'1B'));
+      if(anyF.length) assign(anyF.sort((a,b)=>sc(b,'1B',hist[b.name]||[])-sc(a,'1B',hist[a.name]||[]))[0],'1B');
+    }
+  }
+
+  // ── STEP 7: 3B, LCF, RCF, LF — strong pref: males only (LF exception Nicole) ──
+  const malePrefPos = ['3B','LCF','RCF','LF'].filter(pos=>!posA.has(pos));
+  for(const pos of malePrefPos){
+    const males = playing.filter(p=>p.g==='M'&&!pA.has(p.name)&&canPlay(p,pos));
+    if(males.length){
+      assign(males.sort((a,b)=>sc(b,pos,hist[b.name]||[])-sc(a,pos,hist[a.name]||[]))[0], pos);
+    }
+  }
+
+  // ── STEP 8: SS (no gender restriction) ──
+  if(!posA.has('SS')){
+    const opts=playing.filter(p=>!pA.has(p.name)&&canPlay(p,'SS'))
+      .sort((a,b)=>sc(b,'SS',hist[b.name]||[])-sc(a,'SS',hist[a.name]||[]));
+    if(opts.length) assign(opts[0],'SS');
+  }
+
+  // ── STEP 9: Greedy fill remaining ──
+  const open = ALL_POS.filter(pos=>!posA.has(pos));
+  for(const pos of open){
+    const candidates = playing.filter(p=>{
+      if(pA.has(p.name)) return false;
+      if(!canPlay(p,pos)) return false;
+      // *** HARD: 1B and 2B — ABSOLUTELY NO MALES ***
+      if(FEMALE_ONLY.includes(pos) && p.g==='M') return false;
+      // Strong: RF — prefer female (reject male here)
+      if(pos==='RF' && p.g==='M') return false;
+      // Strong: approved catchers only
+      if(pos==='C' && !PREF_CATCHERS.includes(p.name)) return false;
+      // Strong: approved pitchers only
+      if(pos==='P' && !PREF_PITCHERS.includes(p.name)) return false;
+      // HARD: exactly 1 female in outfield (count current)
+      if(OUTFIELD.includes(pos) && p.g==='F'){
+        const femOut=Object.entries(inning).filter(([nm,ps])=>OUTFIELD.includes(ps)&&avail.find(x=>x.name===nm)?.g==='F').length;
+        if(femOut>=1) return false;
+      }
+      // Strong: male-only pref positions (but allow if no male available)
+      if(MALE_PREF.includes(pos) && p.g==='F' && p.name!=='Nicole Wolfe') return false;
+      return true;
+    }).sort((a,b)=>sc(b,pos,hist[b.name]||[])-sc(a,pos,hist[a.name]||[]));
+    if(candidates.length) assign(candidates[0], pos);
+  }
+
+  // ── STEP 10: Last resort — fill any still-empty pos without restrictions ──
+  for(const pos of ALL_POS){
+    if(posA.has(pos)) continue;
+    // But NEVER put a male at 1B or 2B — skip if only males left
+    const left = playing.filter(p=>!pA.has(p.name));
+    if(!left.length) continue;
+    if(FEMALE_ONLY.includes(pos)){
+      const femLeft = left.filter(p=>p.g==='F');
+      if(femLeft.length) assign(femLeft[0],pos);
+      // If no females available — leave empty rather than put male at 1B/2B
+    } else {
+      assign(left[0], pos);
+    }
+  }
+
+  return inning;
+}
+
+// ══════════════════════════════════════════
+// MAIN GENERATE
+// ══════════════════════════════════════════
+function generateLineup(){
+  const avail = getAvail();
+  const innings = parseInt(document.getElementById('innings-count').value)||7;
+  const date = document.getElementById('game-date').value||'Game day';
+  const pitcherNames = getPitchers();
+  const out = document.getElementById('lineup-out');
+
+  if(avail.length<10){out.innerHTML=`<div class="val-warn">⚠ Need at least 10 players (have ${avail.length})</div>`;return;}
+  if(!pitcherNames.length){out.innerHTML=`<div class="val-warn">⚠ No pitchers selected</div>`;return;}
+
+  // Build sitting schedule (guarantees even distribution)
+  const {playingLists, target} = buildSitSchedule(avail, innings);
+
+  const hist={};avail.forEach(p=>hist[p.name]=[]);
+  const cnt2B={},cntRF={},cnt1B={};
+  TWOBRF_ROT.forEach(n=>{cnt2B[n]=0;cntRF[n]=0;});
+  ONEB_ROT.forEach(n=>cnt1B[n]=0);
+
+  const assignments=[];
+  for(let inn=0; inn<innings; inn++){
+    const pitcherName = pitcherNames[inn % pitcherNames.length];
+    const playingNames = playingLists[inn];
+    const inning = assignInning(playingNames, avail, pitcherName, cnt2B, cntRF, cnt1B, hist);
+    // Mark sitters
+    avail.filter(p=>!playingNames.includes(p.name)).forEach(p=>inning[p.name]='SIT');
+    assignments.push(inning);
+    avail.forEach(p=>{const pos=inning[p.name];if(pos&&pos!=='SIT'){hist[p.name].push(pos);}});
+  }
+
+  // Batting order
+  const stdF=STD_BAT.filter(nm=>avail.find(p=>p.name===nm));
+  const extrasB=avail.filter(p=>!STD_BAT.includes(p.name));
+  const pool=[...stdF,...extrasB.map(p=>p.name)].map(nm=>avail.find(p=>p.name===nm)).filter(Boolean);
+  const bat=enforceBatOrder(pool);
+
+  G={assignments,bat,avail,innings,date};
+  renderAll();
+}
+
+function enforceBatOrder(pool){
+  const result=[],rem=[...pool];
+  while(rem.length){
+    const last2=result.slice(-2);
+    const streak=last2.length===2&&last2.every(p=>p.g==='M');
+    if(streak){const fi=rem.findIndex(p=>p.g==='F');if(fi>=0)result.push(...rem.splice(fi,1));else result.push(...rem.splice(0,1));}
+    else result.push(...rem.splice(0,1));
+  }
+  return result;
+}
+
+// ══════════════════════════════════════════
+// RENDER EVERYTHING
+// ══════════════════════════════════════════
+function renderAll(){
+  if(!G.assignments) return;
+  const {assignments,bat,avail,innings,date}=G;
+
+  // Recount play counts
+  const pc={};avail.forEach(p=>pc[p.name]=0);
+  assignments.forEach(inn=>avail.forEach(p=>{if(inn[p.name]&&inn[p.name]!=='SIT')pc[p.name]++;}));
+
+  // Validate HARD rules
+  const warns=[];
+  const minI=Math.min(...avail.map(p=>pc[p.name]));
+  const maxI=Math.max(...avail.map(p=>pc[p.name]));
+  if(maxI-minI>1) warns.push(`Innings spread is ${maxI-minI} (max 1 allowed). Range: ${minI}–${maxI}`);
+
+  for(let inn=0;inn<innings;inn++){
+    const inning=assignments[inn];
+    const femOut=avail.filter(p=>p.g==='F'&&OUTFIELD.includes(inning[p.name]));
+    const p1B=avail.find(p=>inning[p.name]==='1B');
+    const p2B=avail.find(p=>inning[p.name]==='2B');
+    if(femOut.length!==1) warns.push(`Inn ${inn+1}: ${femOut.length} female(s) in outfield (need exactly 1)`);
+    if(p1B&&p1B.g!=='F') warns.push(`Inn ${inn+1}: MALE (${dn(p1B)}) at 1B — HARD RULE VIOLATION`);
+    if(p2B&&p2B.g!=='F') warns.push(`Inn ${inn+1}: MALE (${dn(p2B)}) at 2B — HARD RULE VIOLATION`);
+  }
+  for(let i=2;i<bat.length;i++){
+    if(bat[i].g==='M'&&bat[i-1].g==='M'&&bat[i-2].g==='M'){warns.push('Batting: 3+ men in a row');break;}
+  }
+
+  let html=`<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.04em;margin-bottom:.5rem">🥎 ${date} Lineup</div>`;
+  html+=`<div style="font-size:12px;color:var(--tx2);margin-bottom:1rem">⚖️ Innings per player: ${minI}–${maxI} &nbsp;·&nbsp; ${avail.length} players, ${innings} innings</div>`;
+
+  // Batting order
+  html+=`<div class="slabel">Batting order</div><div class="bat-list">`;
+  bat.forEach((p,i)=>{
+    const isF=p.g==='F';
+    html+=`<div class="bat-item${isF?' bf':''}"><div class="bat-num">${i+1}</div><div class="bat-name">${p.name}</div><span class="bat-badge ${isF?'bbf':'bbm'}">${isF?'F':'M'}</span></div>`;
+  });
+  html+=`</div>`;
+
+  // Field by inning
+  html+=`<div class="slabel" style="margin-top:1.2rem">Field by inning <span style="font-size:10px;color:var(--tx3);font-weight:400;text-transform:none;letter-spacing:0">— drag players to swap positions, or drag from sitting row</span></div>`;
+  html+=`<div class="inn-tabs" id="inn-tabs">`;
+  for(let i=0;i<innings;i++) html+=`<div class="inn-tab${i===0?' active':''}" onclick="showInn(${i})" id="it-${i}">Inn ${i+1}</div>`;
+  html+=`</div><div id="inn-views">`;
+  for(let inn=0;inn<innings;inn++){
+    html+=`<div id="iv-${inn}" style="display:${inn===0?'block':'none'}">${buildFieldView(inn)}</div>`;
+  }
+  html+=`</div>`;
+
+  // Full sheet
+  html+=`<div class="slabel" style="margin-top:1.5rem">Full sheet</div>`;
+  html+=`<div class="legend-row"><span class="leg ip">P</span>Pitcher &nbsp;<span class="leg ic">C</span>Catcher &nbsp;<span class="leg iif">IF</span>Infield &nbsp;<span class="leg iof">OF</span>Outfield &nbsp;<span style="font-size:11px;color:var(--tx3)">Row: <span style="color:#93c5fd">blue</span>=M · <span style="color:#f9a8d4">pink</span>=F</span></div>`;
+  html+=`<div id="full-sheet-wrap"></div>`;
+
+  html+=warns.length
+    ?`<div class="val-warn" id="val-box">⚠ Rule violations:<br>${warns.map(w=>`• ${w}`).join('<br>')}</div>`
+    :`<div class="val-ok" id="val-box">✓ All hard rules satisfied</div>`;
+
+  html+=`<div class="copy-row">
+    <button class="btn btn-primary" onclick="if(activeLibId){saveCurrentLineup(activeLibId);renderLibrary();}else{saveCurrentLineup(null);}">💾 Save lineup</button>
+    <button class="btn" onclick="copyWA()">📋 WhatsApp</button>
+    <button class="btn" onclick="copySheets()">📊 Google Sheets</button>
+  </div>`;
+
+  document.getElementById('lineup-out').innerHTML=html;
+  renderFullSheet();
+  attachDrag();
+}
+
+// ══════════════════════════════════════════
+// BUILD FIELD VIEW HTML
+// ══════════════════════════════════════════
+function buildFieldView(inn){
+  const {assignments,avail}=G;
+  const inning=assignments[inn];
+
+  const slot=pos=>{
+    const pl=avail.find(p=>inning[p.name]===pos);
+    const isF=pl?.g==='F';
+    const isC=pos==='C'&&pl&&PREF_CATCHERS.includes(pl.name);
+    const reqF=REQ_F_DISPLAY.includes(pos);
+    const cls=isC?'fcatch':reqF?'freq':isF?'ff':pl?'fm':'';
+    const lbl=isC?`${dn(pl)} ⚡`:pl?dn(pl):'—';
+    return `<div class="fslot draggable-slot ${cls}" data-inn="${inn}" data-pos="${pos}">
+      <div class="fslot-pos">${pos}${reqF?' ♀':''}${pos==='P'?' 🥎':''}</div>
+      <div class="fslot-name">${lbl}</div>
+    </div>`;
+  };
+
+  const row=(positions,cols)=>
+    `<div class="field-row-grid" style="grid-template-columns:repeat(${cols},1fr);gap:5px;margin-bottom:5px">${positions.map(slot).join('')}</div>`;
+
+  const sitters=avail.filter(p=>inning[p.name]==='SIT');
+  const sitChips=sitters.length
+    ? sitters.map(p=>`<div class="sit-chip ${p.g==='M'?'sit-m':'sit-f'}" data-inn="${inn}" data-name="${p.name}" draggable="true">${dn(p)}</div>`).join('')
+    : `<span class="sit-empty">Nobody sitting</span>`;
+
+  return `<div class="field-diamond">
+    ${row(['LF','LCF','RCF','RF'],4)}
+    ${row(['3B','SS','2B','1B'],4)}
+    <div class="field-row-grid" style="grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:5px">${slot('P')}${slot('C')}</div>
+    <div class="sit-section">
+      <div class="sit-label">Sitting out (${sitters.length}) — drag to a position to swap in</div>
+      <div class="sit-chips" data-inn="${inn}">${sitChips}</div>
+    </div>
+  </div>`;
+}
+
+// Re-render one inning view
+function rerenderInn(inn){
+  const el=document.getElementById(`iv-${inn}`);
+  if(el) el.innerHTML=buildFieldView(inn);
+  renderFullSheet();
+  attachDrag();
+  revalidate();
+}
+
+// ══════════════════════════════════════════
+// DRAG & DROP — field slots + sitting chips
+// ══════════════════════════════════════════
+let dragData=null; // {type:'field'|'sit', inn, pos?, name?}
+
+function attachDrag(){
+  // Field slots — drag between positions
+  document.querySelectorAll('.fslot.draggable-slot').forEach(el=>{
+    el.draggable=true;
+    el.addEventListener('dragstart',e=>{
+      dragData={type:'field', inn:+el.dataset.inn, pos:el.dataset.pos};
+      el.classList.add('is-drag-src');
+      e.dataTransfer.effectAllowed='move';
+    });
+    el.addEventListener('dragend',()=>{
+      el.classList.remove('is-drag-src');
+      clearDragHighlight();
+    });
+    el.addEventListener('dragover',e=>{
+      e.preventDefault();
+      clearDragHighlight();
+      el.classList.add('drop-target');
+    });
+    el.addEventListener('dragleave',()=>el.classList.remove('drop-target'));
+    el.addEventListener('drop',e=>{
+      e.preventDefault();
+      el.classList.remove('drop-target');
+      if(!dragData) return;
+      const dstInn=+el.dataset.inn, dstPos=el.dataset.pos;
+      if(dragData.type==='field'){
+        if(dragData.inn!==dstInn||dragData.pos===dstPos){dragData=null;return;}
+        swapPositions(dstInn, dragData.pos, dstPos);
+      } else if(dragData.type==='sit'){
+        // Drag from sitting to field position
+        swapSitterToField(dstInn, dragData.name, dstPos);
+      }
+      dragData=null;
+    });
+  });
+
+  // Sitting chips — drag to field slot
+  document.querySelectorAll('.sit-chip').forEach(el=>{
+    el.addEventListener('dragstart',e=>{
+      dragData={type:'sit', inn:+el.dataset.inn, name:el.dataset.name};
+      el.classList.add('is-drag-src');
+      e.dataTransfer.effectAllowed='move';
+    });
+    el.addEventListener('dragend',()=>{
+      el.classList.remove('is-drag-src');
+      clearDragHighlight();
+    });
+  });
+
+  // Sitting zone — drag field player back to sit
+  document.querySelectorAll('.sit-chips').forEach(el=>{
+    el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drop-target');});
+    el.addEventListener('dragleave',()=>el.classList.remove('drop-target'));
+    el.addEventListener('drop',e=>{
+      e.preventDefault();el.classList.remove('drop-target');
+      if(!dragData||dragData.type!=='field') return;
+      const inn=+el.dataset.inn;
+      if(dragData.inn!==inn){dragData=null;return;}
+      swapFieldToSitter(inn, dragData.pos);
+      dragData=null;
+    });
+  });
+}
+
+function clearDragHighlight(){
+  document.querySelectorAll('.fslot,.sit-chips').forEach(el=>el.classList.remove('drop-target','is-drag-src'));
+}
+
+// Swap two field positions within same inning
+function swapPositions(inn, posA, posB){
+  const inning=G.assignments[inn];
+  const pA=Object.keys(inning).find(nm=>inning[nm]===posA);
+  const pB=Object.keys(inning).find(nm=>inning[nm]===posB);
+  if(pA) inning[pA]=posB;
+  if(pB) inning[pB]=posA;
+  rerenderInn(inn);
+}
+
+// Move a sitting player onto a field position (swapping displaced player to sit)
+function swapSitterToField(inn, sitterName, fieldPos){
+  const inning=G.assignments[inn];
+  // Find who currently has fieldPos
+  const displaced=Object.keys(inning).find(nm=>inning[nm]===fieldPos);
+  inning[sitterName]=fieldPos;
+  if(displaced) inning[displaced]='SIT';
+  rerenderInn(inn);
+}
+
+// Move a field player back to sitting (only makes sense if <5 sitters)
+function swapFieldToSitter(inn, fieldPos){
+  const inning=G.assignments[inn];
+  const player=Object.keys(inning).find(nm=>inning[nm]===fieldPos);
+  if(player){inning[player]='SIT';}
+  rerenderInn(inn);
+}
+
+// ══════════════════════════════════════════
+// FULL SHEET RENDER
+// ══════════════════════════════════════════
+function renderFullSheet(){
+  const {assignments,bat,avail,innings}=G;if(!assignments)return;
+  const pc={};avail.forEach(p=>pc[p.name]=0);
+  assignments.forEach(inn=>avail.forEach(p=>{if(inn[p.name]&&inn[p.name]!=='SIT')pc[p.name]++;}));
+
+  let html=`<div class="sheet-wrap"><table><thead><tr><th>#</th><th>Player</th>`;
+  for(let i=0;i<innings;i++) html+=`<th class="inn-hdr">Inn ${i+1}<button class="copy-inn-btn" onclick="openCopyModal(${i})">copy</button></th>`;
+  html+=`<th>Played</th></tr></thead><tbody>`;
+
+  bat.forEach((p,idx)=>{
+    html+=`<tr class="row-${p.g.toLowerCase()}"><td style="color:var(--tx3);font-family:'DM Mono',monospace;font-size:11px">${idx+1}</td><td class="ncell">${p.name}</td>`;
+    for(let inn=0;inn<innings;inn++) html+=`<td>${posBadge(assignments[inn][p.name])}</td>`;
+    html+=`<td style="color:var(--tx3);font-family:'DM Mono',monospace">${pc[p.name]}/${innings}</td></tr>`;
+  });
+
+  const mr=['Total Men'],wr=['Total Women'],tr=['Total'];
+  for(let inn=0;inn<innings;inn++){
+    const men=avail.filter(p=>p.g==='M'&&assignments[inn][p.name]&&assignments[inn][p.name]!=='SIT').length;
+    const women=avail.filter(p=>p.g==='F'&&assignments[inn][p.name]&&assignments[inn][p.name]!=='SIT').length;
+    mr.push(String(men));wr.push(String(women));tr.push(String(men+women));
+  }
+  html+=`<tr class="row-total"><td></td><td class="ncell">${mr[0]}</td>${mr.slice(1).map(v=>`<td>${v}</td>`).join('')}<td></td></tr>`;
+  html+=`<tr class="row-total"><td></td><td class="ncell">${wr[0]}</td>${wr.slice(1).map(v=>`<td>${v}</td>`).join('')}<td></td></tr>`;
+  html+=`<tr class="row-total"><td></td><td class="ncell">${tr[0]}</td>${tr.slice(1).map(v=>`<td>${v}</td>`).join('')}<td></td></tr>`;
+  html+=`</tbody></table></div>`;
+  const el=document.getElementById('full-sheet-wrap');if(el)el.innerHTML=html;
+}
+
+function posBadge(pos){
+  if(!pos||pos==='SIT') return`<span class="isit">—</span>`;
+  if(pos==='P')  return`<span class="ipos ip">P</span>`;
+  if(pos==='C')  return`<span class="ipos ic">C</span>`;
+  if(['1B','2B','3B','SS'].includes(pos)) return`<span class="ipos iif">${pos}</span>`;
+  return`<span class="ipos iof">${pos}</span>`;
+}
+
+// Re-run validation and update val box only
+function revalidate(){
+  const {assignments,bat,avail,innings}=G;if(!assignments)return;
+  const pc={};avail.forEach(p=>pc[p.name]=0);
+  assignments.forEach(inn=>avail.forEach(p=>{if(inn[p.name]&&inn[p.name]!=='SIT')pc[p.name]++;}));
+  const minI=Math.min(...avail.map(p=>pc[p.name]));
+  const maxI=Math.max(...avail.map(p=>pc[p.name]));
+  const warns=[];
+  if(maxI-minI>1)warns.push(`Innings spread is ${maxI-minI}`);
+  for(let inn=0;inn<innings;inn++){
+    const inning=assignments[inn];
+    const femOut=avail.filter(p=>p.g==='F'&&OUTFIELD.includes(inning[p.name]));
+    const p1B=avail.find(p=>inning[p.name]==='1B');
+    const p2B=avail.find(p=>inning[p.name]==='2B');
+    if(femOut.length!==1)warns.push(`Inn ${inn+1}: ${femOut.length} female(s) in outfield`);
+    if(p1B&&p1B.g!=='F')warns.push(`Inn ${inn+1}: MALE at 1B (${dn(p1B)})`);
+    if(p2B&&p2B.g!=='F')warns.push(`Inn ${inn+1}: MALE at 2B (${dn(p2B)})`);
+  }
+  const vb=document.getElementById('val-box');
+  if(vb)vb.outerHTML=warns.length
+    ?`<div class="val-warn" id="val-box">⚠ Rule violations:<br>${warns.map(w=>`• ${w}`).join('<br>')}</div>`
+    :`<div class="val-ok" id="val-box">✓ All hard rules satisfied</div>`;
+}
+
+// ══════════════════════════════════════════
+// COPY INNING MODAL
+// ══════════════════════════════════════════
+let copySrc=null;
+function openCopyModal(src){
+  copySrc=src;
+  document.getElementById('modal-src-lbl').textContent=src+1;
+  const btns=document.getElementById('modal-btns');btns.innerHTML='';
+  for(let i=0;i<G.innings;i++){
+    const b=document.createElement('button');
+    b.className='modal-inn-btn'+(i===src?' same':'');
+    b.textContent=`Inning ${i+1}`;
+    if(i!==src) b.onclick=()=>copyInningTo(src,i);
+    btns.appendChild(b);
+  }
+  document.getElementById('copy-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('copy-modal').classList.remove('open');copySrc=null;}
+function copyInningTo(src,dst){
+  G.assignments[dst]={...G.assignments[src]};
+  closeModal();
+  rerenderInn(dst);
+}
+
+// ══════════════════════════════════════════
+// TAB / VIEW HELPERS
+// ══════════════════════════════════════════
+function showInn(i){
+  document.querySelectorAll('[id^=iv-]').forEach(el=>el.style.display='none');
+  document.querySelectorAll('[id^=it-]').forEach(el=>el.classList.remove('active'));
+  const v=document.getElementById(`iv-${i}`);if(v)v.style.display='block';
+  const t=document.getElementById(`it-${i}`);if(t)t.classList.add('active');
+}
+function switchTab(id,el){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');el.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// COPY FOR WHATSAPP / SHEETS
+// ══════════════════════════════════════════
+function copyWA(){
+  const{assignments:a,bat,avail,innings,date}=G;if(!a)return;
+  let txt=`🥎 *Dusty Balls — ${date}*\n\n*Batting Order*\n`;
+  bat.forEach((p,i)=>txt+=`${i+1}. ${p.name} (${p.g})\n`);
+  txt+=`\n*Field Lineup*\n`;
+  for(let inn=0;inn<innings;inn++){
+    txt+=`\n_Inning ${inn+1}_\n`;
+    ALL_POS.forEach(pos=>{const pl=avail.find(p=>a[inn][p.name]===pos);if(pl)txt+=`${pos}: ${dn(pl)}\n`;});
+    const sit=avail.filter(p=>a[inn][p.name]==='SIT').map(p=>dn(p)).join(', ');
+    if(sit)txt+=`SIT: ${sit}\n`;
+  }
+  navigator.clipboard.writeText(txt).then(()=>{const b=document.querySelectorAll('.copy-row .btn')[0];b.textContent='✓ Copied!';setTimeout(()=>b.textContent='📋 WhatsApp',2000);});
+}
+function copySheets(){
+  const{assignments:a,bat,avail,innings}=G;if(!a)return;
+  const hdr=['Player'];for(let i=1;i<=innings;i++)hdr.push(String(i));
+  const rows=[hdr];
+  bat.forEach(p=>{
+    const row=[p.name];
+    for(let inn=0;inn<innings;inn++){const pos=a[inn][p.name];row.push(pos&&pos!=='SIT'?pos:'');}
+    rows.push(row);
+  });
+  const mr=['Total Men'],wr=['Total Women'],tr=['Total'];
+  for(let inn=0;inn<innings;inn++){
+    const men=avail.filter(p=>p.g==='M'&&a[inn][p.name]&&a[inn][p.name]!=='SIT').length;
+    const women=avail.filter(p=>p.g==='F'&&a[inn][p.name]&&a[inn][p.name]!=='SIT').length;
+    mr.push(String(men));wr.push(String(women));tr.push(String(men+women));
+  }
+  rows.push(mr,wr,tr);
+  const tsv=rows.map(r=>r.join(String.fromCharCode(9))).join(String.fromCharCode(10));
+  navigator.clipboard.writeText(tsv).then(()=>{const b=document.querySelectorAll('.copy-row .btn')[1];b.textContent='✓ Copied! Paste at A1';setTimeout(()=>b.textContent='📊 Google Sheets',2500);});
+}
+
+// ══════════════════════════════════════════
+// LINEUP LIBRARY — multi-lineup save/load system
+// ══════════════════════════════════════════
+let library = [];      // array of saved lineup objects
+let activeLibId = null; // currently displayed library tab
+
+function loadLibrary(){
+  try{
+    const raw = localStorage.getItem(LU_SK);
+    if(raw){ library = JSON.parse(raw); }
+  }catch(e){ library=[]; }
+}
+
+async function loadLibraryFromCloud(){
+  const cloudEntries = await cloudLoadAll();
+  if(cloudEntries === null) return; // cloud unavailable, use local
+  if(cloudEntries.length > 0){
+    // Merge: cloud is source of truth, but keep any local-only entries not in cloud
+    const cloudIds = new Set(cloudEntries.map(e=>e.id));
+    const localOnly = library.filter(e=>!cloudIds.has(e.id));
+    library = [...cloudEntries, ...localOnly];
+    saveLibrary(); // sync merged result back to localStorage
+    document.getElementById('sync-badge').style.display='inline';
+    showCloudStatus('☁ Loaded ' + cloudEntries.length + ' lineups from cloud', 'ok');
+  } else {
+    // Cloud is empty — push local lineups up
+    if(library.length > 0){
+      for(const entry of library) await cloudSave(entry);
+      showCloudStatus('☁ Pushed ' + library.length + ' local lineups to cloud', 'ok');
+    }
+    document.getElementById('sync-badge').style.display='inline';
+  }
+  renderLibrary();
+}
+
+async function manualCloudSync(){
+  showCloudStatus('↻ Syncing...', 'ok');
+  await loadLibraryFromCloud();
+}
+
+function saveLibrary(){
+  try{ localStorage.setItem(LU_SK, JSON.stringify(library)); }catch(e){}
+}
+// Always save locally; also push to cloud
+async function saveLibraryEntry(entry){
+  saveLibrary(); // local first
+  await cloudSave(entry);
+  showCloudStatus('☁ Saved to cloud', 'ok');
+}
+
+// Generate a unique ID
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// Save current G state as a new lineup (or overwrite existing)
+function saveCurrentLineup(id){
+  if(!G.assignments){ alert('Generate a lineup first!'); return; }
+  const existing = id ? library.find(l=>l.id===id) : null;
+  const label = existing
+    ? existing.label
+    : (document.getElementById('game-date').value||'Lineup') + ' — ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+
+  const entry = {
+    id: id || uid(),
+    label,
+    savedAt: new Date().toISOString(),
+    date: G.date,
+    innings: G.innings,
+    availNames: G.avail.map(p=>p.name),
+    batNames: G.bat.map(p=>p.name),
+    // Store assignments as array of {playerName: pos} objects
+    assignments: G.assignments.map(inning => {
+      const obj={};
+      Object.entries(inning).forEach(([nm,pos])=>obj[nm]=pos);
+      return obj;
+    }),
+  };
+
+  if(existing){
+    const idx = library.indexOf(existing);
+    library[idx] = entry;
+  } else {
+    library.push(entry);
+  }
+  saveLibraryEntry(entry); // saves locally + pushes to cloud
+  activeLibId = entry.id;
+  renderLibrary();
+  flashSaved();
+}
+
+// Load a library entry into view (restores G state and renders)
+function loadLibraryEntry(id){
+  const entry = library.find(l=>l.id===id);
+  if(!entry){ return; }
+  activeLibId = id;
+
+  // Restore G from saved entry
+  const avail = entry.availNames.map(nm=>ROSTER.find(p=>p.name===nm)).filter(Boolean);
+  const bat   = entry.batNames.map(nm=>avail.find(p=>p.name===nm)).filter(Boolean);
+  G = {
+    assignments: entry.assignments,
+    bat,
+    avail,
+    innings: entry.innings,
+    date: entry.date,
+  };
+  renderLibrary();
+  renderAll();
+  document.getElementById('lineup-out').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// Rename a library entry
+function renameEntry(id){
+  const entry = library.find(l=>l.id===id);
+  if(!entry)return;
+  const newName = prompt('Rename lineup:', entry.label);
+  if(newName&&newName.trim()){
+    entry.label = newName.trim();
+    saveLibrary();
+    renderLibrary();
+  }
+}
+
+// Delete a library entry
+function deleteEntry(id){
+  if(!confirm('Delete this saved lineup?'))return;
+  library = library.filter(l=>l.id!==id);
+  if(activeLibId===id) activeLibId = library.length ? library[library.length-1].id : null;
+  saveLibrary();
+  cloudDelete(id); // async, fire and forget
+  renderLibrary();
+  if(activeLibId) loadLibraryEntry(activeLibId);
+  else document.getElementById('lu-body').innerHTML='';
+}
+
+// Export a library entry as JSON (for copy-paste import)
+function exportEntryJSON(id){
+  const entry = library.find(l=>l.id===id);
+  if(!entry)return;
+  const json = JSON.stringify(entry, null, 2);
+  navigator.clipboard.writeText(json).then(()=>alert('Lineup JSON copied to clipboard! Paste it into Import to reload.'));
+}
+
+// Render the library tab bar and active entry header
+function renderLibrary(){
+  const scroll = document.getElementById('lu-scroll');
+  const body   = document.getElementById('lu-body');
+
+  if(!scroll||!body) return;
+
+  if(!library.length){
+    scroll.innerHTML = '<span style="font-size:12px;color:var(--tx4);padding:6px 4px">No saved lineups yet — generate and save one below</span>';
+    body.innerHTML = '';
+    return;
+  }
+
+  // Tab bar
+  scroll.innerHTML = library.map(entry=>{
+    const isActive = entry.id===activeLibId;
+    return `<div class="lu-tab ${isActive?'active':''}" onclick="loadLibraryEntry('${entry.id}')">
+      <span class="lu-tab-name" title="${entry.label}">${entry.label}</span>
+      <span class="lu-tab-x" onclick="event.stopPropagation();deleteEntry('${entry.id}')" title="Delete">✕</span>
+    </div>`;
+  }).join('');
+
+  // Action bar for active entry
+  if(activeLibId){
+    const entry = library.find(l=>l.id===activeLibId);
+    if(entry){
+      body.innerHTML = `
+        <div class="lu-action-bar">
+          <span style="font-size:12px;color:var(--tx2);flex:1">
+            <strong style="color:var(--tx)">${entry.label}</strong>
+            &nbsp;·&nbsp; saved ${new Date(entry.savedAt).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+          </span>
+          <button class="btn btn-sm" onclick="saveCurrentLineup('${entry.id}')">💾 Save changes</button>
+          <button class="btn btn-sm" onclick="renameEntry('${entry.id}')">✏️ Rename</button>
+          <button class="btn btn-sm" onclick="exportEntryJSON('${entry.id}')">📤 Export JSON</button>
+          <button class="btn btn-sm" onclick="exportToSheets('${entry.id}')">📊 Push to Google Sheets</button>
+        </div>`;
+    }
+  }
+}
+
+// Import modal
+let importTab = 'tsv';
+function setImportTab(tab){
+  importTab = tab;
+  document.getElementById('imp-tsv-section').style.display = tab==='tsv' ? 'block' : 'none';
+  document.getElementById('imp-json-section').style.display = tab==='json' ? 'block' : 'none';
+  document.getElementById('imp-tab-tsv').style.background = tab==='tsv' ? 'var(--tx)' : '';
+  document.getElementById('imp-tab-tsv').style.color      = tab==='tsv' ? 'var(--bg)' : '';
+  document.getElementById('imp-tab-json').style.background = tab==='json' ? 'var(--tx)' : '';
+  document.getElementById('imp-tab-json').style.color      = tab==='json' ? 'var(--bg)' : '';
+}
+function openImportModal(){
+  document.getElementById('import-modal').classList.add('open');
+  setImportTab('tsv');
+  document.getElementById('imp-preview').textContent='';
+}
+function closeImportModal(){
+  document.getElementById('import-modal').classList.remove('open');
+  document.getElementById('import-json-area').value='';
+  document.getElementById('import-tsv-area').value='';
+  document.getElementById('imp-tsv-label').value='';
+  document.getElementById('imp-preview').textContent='';
+}
+
+// Parse TSV pasted from Google Sheets into a lineup entry
+function parseTSV(raw, label){
+  const lines = raw.trim().split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length < 2) throw new Error('Need at least a header row and one player row');
+
+  // Parse header — first cell is "Player", rest are inning numbers
+  const headerCells = lines[0].split('\t');
+  if(!headerCells[0].toLowerCase().includes('player')) throw new Error('First column must be "Player"');
+  const innings = headerCells.length - 1;
+  if(innings < 1) throw new Error('No inning columns found');
+
+  // Parse player rows
+  const assignments = Array.from({length: innings}, ()=>({}));
+  const availNames = [];
+  const batNames = [];
+
+  for(let r=1; r<lines.length; r++){
+    const cells = lines[r].split('\t');
+    const playerName = cells[0].trim();
+    if(!playerName) continue;
+
+    // Match to roster — exact first, then last-name match, avoid ambiguous first-name-only match
+    const rosterPlayer = ROSTER.find(p => p.name === playerName) ||
+      ROSTER.find(p => p.name.toLowerCase() === playerName.toLowerCase()) ||
+      ROSTER.find(p => {
+        // Only match on full last name to avoid "Melissa V" matching "Melissa T"
+        const rLast = p.name.split(' ').pop().toLowerCase();
+        const qLast = playerName.split(' ').pop().toLowerCase();
+        return rLast === qLast && rLast.length > 1;
+      });
+    if(!rosterPlayer){
+      console.warn('Could not match player:', playerName);
+      continue;
+    }
+
+    availNames.push(rosterPlayer.name);
+    batNames.push(rosterPlayer.name);
+
+    for(let inn=0; inn<innings; inn++){
+      const pos = (cells[inn+1]||'').trim().toUpperCase();
+      if(pos && ALL_POS.includes(pos)){
+        assignments[inn][rosterPlayer.name] = pos;
+      } else {
+        // blank or unrecognized = sitting out this inning
+        assignments[inn][rosterPlayer.name] = 'SIT';
+      }
+    }
+  }
+
+  if(availNames.length === 0) throw new Error('No recognizable player names found');
+
+  return {
+    id: uid(),
+    label: label || ('Imported lineup'),
+    savedAt: new Date().toISOString(),
+    date: label || 'Imported',
+    innings,
+    availNames,
+    batNames,
+    assignments,
+  };
+}
+
+// Live preview while typing in TSV area
+function previewTSV(){
+  const raw = document.getElementById('import-tsv-area').value.trim();
+  const preview = document.getElementById('imp-preview');
+  if(!raw){ preview.textContent=''; return; }
+  try{
+    const lines = raw.split(/\r?\n/).filter(l=>l.trim());
+    const headerCells = lines[0].split('\t');
+    const innings = headerCells.length - 1;
+    const playerCount = lines.slice(1).filter(l=>l.trim()).length;
+    preview.innerHTML = `<span style="color:var(--sft)">✓ Detected: ${playerCount} players, ${innings} innings</span>`;
+  }catch(e){
+    preview.innerHTML = `<span style="color:var(--hard)">⚠ ${e.message}</span>`;
+  }
+}
+
+function doImport(){
+  if(importTab==='tsv'){
+    const raw = document.getElementById('import-tsv-area').value.trim();
+    const label = document.getElementById('imp-tsv-label').value.trim();
+    if(!raw){ alert('Paste your Google Sheets lineup first.'); return; }
+    try{
+      const entry = parseTSV(raw, label || 'Imported lineup');
+      library.push(entry);
+      saveLibraryEntry(entry); // saves locally + pushes to cloud
+      activeLibId = entry.id;
+      closeImportModal();
+      loadLibraryEntry(entry.id);
+      renderLibrary();
+    }catch(e){ alert('Could not parse lineup:\n' + e.message); }
+  } else {
+    const raw = document.getElementById('import-json-area').value.trim();
+    try{
+      const entry = JSON.parse(raw);
+      if(!entry.id||!entry.assignments||!entry.availNames){ alert('Invalid lineup JSON — missing required fields.'); return; }
+      entry.id = uid();
+      entry.label = (entry.label||'Imported') + ' (imported)';
+      entry.savedAt = new Date().toISOString();
+      library.push(entry);
+      saveLibraryEntry(entry); // saves locally + pushes to cloud
+      activeLibId = entry.id;
+      closeImportModal();
+      loadLibraryEntry(entry.id);
+      renderLibrary();
+    }catch(e){ alert('Could not parse JSON. Make sure you pasted a full exported lineup.'); }
+  }
+}
+
+// Push lineup to Google Sheets via CSV (tab-separated) copy
+// Since we can't write to Sheets directly without OAuth from this context,
+// we package the TSV and open a pre-filled download as .tsv that can be drag-dropped to Sheets
+function exportToSheets(id){
+  const entry = library.find(l=>l.id===id);
+  if(!entry){ copySheets(); return; }
+
+  // Load the entry into G temporarily if it's not already active
+  const avail = entry.availNames.map(nm=>ROSTER.find(p=>p.name===nm)).filter(Boolean);
+  const bat   = entry.batNames.map(nm=>avail.find(p=>p.name===nm)).filter(Boolean);
+  const assignments = entry.assignments;
+  const innings = entry.innings;
+
+  const hdr=['Player'];for(let i=1;i<=innings;i++)hdr.push(String(i));
+  const rows=[hdr];
+  bat.forEach(p=>{
+    const row=[p.name];
+    for(let inn=0;inn<innings;inn++){const pos=assignments[inn][p.name];row.push(pos&&pos!=='SIT'?pos:'');}
+    rows.push(row);
+  });
+  const mr=['Total Men'],wr=['Total Women'],tr=['Total'];
+  for(let inn=0;inn<innings;inn++){
+    const men  =avail.filter(p=>p.g==='M'&&assignments[inn][p.name]&&assignments[inn][p.name]!=='SIT').length;
+    const women=avail.filter(p=>p.g==='F'&&assignments[inn][p.name]&&assignments[inn][p.name]!=='SIT').length;
+    mr.push(String(men));wr.push(String(women));tr.push(String(men+women));
+  }
+  rows.push(mr,wr,tr);
+  const tsv=rows.map(r=>r.join(String.fromCharCode(9))).join(String.fromCharCode(10));
+
+  // Copy TSV + also offer download
+  navigator.clipboard.writeText(tsv).then(()=>{
+    // Also trigger a .tsv download so it can be imported to Sheets via File > Import
+    const blob = new Blob([tsv],{type:'text/tab-separated-values'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href=url; a.download=`${entry.label.replace(/[^a-z0-9]/gi,'_')}.tsv`; a.click();
+    URL.revokeObjectURL(url);
+    alert(`"${entry.label}" exported!\n\n✓ TSV copied to clipboard (paste at A1 in a new sheet)\n✓ .tsv file downloaded (use Google Sheets > File > Import to create a new tab)`);
+  });
+}
+
+// ══════════════════════════════════════════
+// Override generateLineup to auto-save to library
+// ══════════════════════════════════════════
+const _origGenerate = generateLineup;
+// Wrap generateLineup to auto-create a new library entry after each generation
+function generateLineupAndSave(){
+  // Call original generator
+  generateLineup();
+  // After G is populated, auto-create a new library tab (unsaved)
+  if(G.assignments){
+    const newId = uid();
+    const label = (G.date && G.date!=='Game day' ? G.date : 'Lineup') + ' · ' + new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const entry = {
+      id: newId,
+      label,
+      savedAt: new Date().toISOString(),
+      date: G.date,
+      innings: G.innings,
+      availNames: G.avail.map(p=>p.name),
+      batNames: G.bat.map(p=>p.name),
+      assignments: G.assignments.map(inning=>{
+        const obj={};Object.entries(inning).forEach(([nm,pos])=>obj[nm]=pos);return obj;
+      }),
+      unsaved: true,
+    };
+    library.push(entry);
+    // Don't persist to cloud until user hits Save — just keep in memory and localStorage
+    saveLibrary();
+    activeLibId = newId;
+    renderLibrary();
+  }
+}
+
+// Patch the generate button to use the wrapper
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+if(!loadRules()){rules=DEFAULT_RULES.map(r=>({...r}));saveRules();}
+renderRules();
+initLineupPane();
+loadLibrary();       // load local first for instant display
+renderLibrary();
+loadLibraryFromCloud(); // then sync from cloud (async, updates when ready)
+
+// Generate button already patched in HTML
+</script>
+
+
+</body></html>
